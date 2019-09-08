@@ -1,0 +1,9 @@
+{
+    "title": "$:/plugins/ento/ast-preview",
+    "description": "Editor preview: AST",
+    "author": "Marica Odagaki",
+    "version": "0.0.1",
+    "core-version": ">=5.0.8",
+    "source": "https://github.com/ento/tw5-ast-preview-plugin",
+    "plugin-type": "plugin"
+}

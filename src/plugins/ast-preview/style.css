@@ -1,0 +1,64 @@
+/*\
+title: $:/plugins/ento/ast-preview/style.css
+tags: [[$:/tags/Stylesheet]]
+type: text/css
+\*/
+
+.ast-widget-list {
+    list-style-type: none;
+    margin: 0;
+    padding-left: 2em;
+}
+
+.ast-widget-list .ast-widget-details {
+    margin-left: -1.0em;
+}
+
+.ast-widget-details summary {
+    display: flex;
+    list-style: none;
+}
+
+.ast-widget-details summary::-webkit-details-marker {
+    display: none
+}
+
+.ast-widget-details > summary:before {
+    content: "+";
+    color: green;
+    display: inline-block;
+    min-width: 1em;
+    text-align: center;
+}
+
+.ast-widget-details[open] > summary:before {
+    content: "-";
+    color: red;
+}
+
+.ast-widget-node-type {
+    color: #268BD2;
+}
+
+.ast-widget-node-preview {
+    color: #93A1A1;
+    display: inline-block;
+    margin-left: 0.3em;
+    max-width: 14em;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.ast-widget-attr-name {
+    color: #B58900;
+}
+
+.ast-widget-attr-separator {
+    color: #93A1A1;
+}
+
+.ast-widget-attr-value {
+    color: #2AA198;
+    margin-left: 0.3em;
+}

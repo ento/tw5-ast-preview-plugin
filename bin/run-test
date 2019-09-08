@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+# -*- mode: shell-script -*-
+
+set -euo pipefail
+
+if [ ! -f "./test/tiddlywiki.info" ]; then
+    echo "please run $0 from the project root"
+    exit 1
+fi
+
+inspectFlag=""
+if [ "${1:-}" == "--debug" ]; then
+   inspectFlag="--inspect-brk=0.0.0.0"
+fi
+
+exec docker run \
+    -v $(pwd):/wiki \
+    -p 9229:9229 \
+    --init \
+    --user $(id -u):$(id -g) \
+    --entrypoint node \
+    tiddlywiki:latest \
+    $inspectFlag \
+    /usr/local/bin/tiddlywiki \
+    /wiki/test \
+    --verbose \
+    --version \
+    --rendertiddler $:/core/save/all test.html text/plain

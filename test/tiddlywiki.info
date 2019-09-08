@@ -1,0 +1,16 @@
+{
+  "description": "markdown plugin tests",
+  "plugins": [
+    "tiddlywiki/jasmine",
+    "tiddlywiki/markdown",
+    "ast-preview"
+  ],
+  "themes": [
+    "tiddlywiki/vanilla",
+    "tiddlywiki/snowwhite"
+  ],
+  "build": {
+    "index": [
+      "--rendertiddler","$:/core/save/all","test.html","text/plain"]
+  }
+}
