@@ -13,9 +13,18 @@ Widget to display the parsed tree node of the specified tiddler.
 "use strict";
 
   var Widget = require("$:/core/modules/widgets/widget.js").widget;
+  var snabbdom = require("$:/plugins/ento/ast-preview/snabbdom/snabbdom.js");
+  var snabbdomAttrs = require("$:/plugins/ento/ast-preview/snabbdom/snabbdom-attributes.js").default;
+  var h = require("$:/plugins/ento/ast-preview/snabbdom/h.js").default;
 
   var AstWidget = function(parseTreeNode,options) {
     this.initialise(parseTreeNode,options);
+    var domApi = undefined;
+    if (!$tw.browser) {
+      var FakeDomApi = require("$:/plugins/ento/ast-preview/fakedomapi.js").FakeDomApi;
+      domApi = FakeDomApi(this.document);
+    }
+    this.patch = snabbdom.init([snabbdomAttrs], domApi);
   };
 
   /*
@@ -26,26 +35,37 @@ Widget to display the parsed tree node of the specified tiddler.
   /*
     Render this widget into the DOM
   */
-  AstWidget.prototype.render = function(parent,nextSibling) {
+  AstWidget.prototype.render = function(parent, nextSibling) {
     this.parentDomNode = parent;
     this.computeAttributes();
     this.execute();
-    this.renderChildren(parent,nextSibling);
+    var oldVdomNode = this.vdomNode;
+    if (!oldVdomNode) {
+      var container = this.document.createElement("div");
+      this.assignAttributes(container, {excludeEventAttributes: true});
+      parent.insertBefore(container, nextSibling);
+      this.domNodes.push(container);
+      oldVdomNode = container;
+    }
+    this.vdomNode = this.patch(oldVdomNode, this.newVdomNode);
+  };
+
+  AstWidget.prototype.refreshSelf = function() {
+    var nextSibling = this.findNextSiblingDomNode();
+    this.render(this.parentDomNode, nextSibling);
   };
 
   /*
     Compute the internal state of the widget
   */
   AstWidget.prototype.execute = function() {
-    // Get our parameters
     this.tiddlerTitle = this.getAttribute("tiddler", this.getVariable("currentTiddler"));
-    var parser = this.wiki.parseTiddler(this.tiddlerTitle),
-        parseTreeNodes = this.parseTreeNode.children;
+    var parser = this.wiki.parseTiddler(this.tiddlerTitle);
     if (parser) {
-      parseTreeNodes = transformParseTreeNodes(parser.tree);
+      this.newVdomNode = h("div", {}, transformParseTreeNodes(parser.tree));
+    } else {
+      this.newVdomNode = h("div", {}, transformParseTreeNodes(this.parseTreeNode.children));
     }
-    // Construct the child widgets
-    this.makeChildWidgets(parseTreeNodes);
   };
 
   function WrappedParsedTreeNodes(value) {
@@ -159,17 +179,13 @@ Widget to display the parsed tree node of the specified tiddler.
   var Html = {};
 
   function htmlElement(tag) {
-    return function(attrs, content) {
-      var attributes = {};
-      $tw.utils.each(attrs, function(attr) {
-        attributes[attr.name] = attr;
+    return function(dataArray, content) {
+      var data = {};
+      $tw.utils.each(dataArray, function(attr) {
+        data[attr.key] = data[attr.key] || {};
+        data[attr.key][attr.name] = attr.value;
       });
-      return {
-        type: "element",
-        tag: tag,
-        attributes: attributes,
-        children: content
-      };
+      return h(tag, data, content);
     }
   }
   Html.ul = htmlElement("ul");
@@ -178,26 +194,23 @@ Widget to display the parsed tree node of the specified tiddler.
   Html.summary = htmlElement("summary");
   Html.li = htmlElement("li");
   Html.span = htmlElement("span");
-  Html.text = function(text) {
-    return {type: "text", text: text};
-  };
   Html["class"] = function(name) {
-    return {name: "class", type: "string", value: name};
+    return {key: "attrs", name: "class", value: name};
   };
   Html.nodeType = function(name) {
-    return Html.span([Html.class("ast-widget-node-type")], [Html.text(name)]);
+    return Html.span([Html.class("ast-widget-node-type")], name);
   };
   Html.nodePreview = function(name) {
-    return Html.span([Html.class("ast-widget-node-preview")], [Html.text(name)]);
+    return Html.span([Html.class("ast-widget-node-preview")], name);
   };
   Html.attrName = function(name) {
-    return Html.span([Html.class("ast-widget-attr-name")], [Html.text(name)]);
+    return Html.span([Html.class("ast-widget-attr-name")], name);
   };
   Html.attrSep = function() {
-    return Html.span([Html.class("ast-widget-attr-separator")], [Html.text(":")]);
+    return Html.span([Html.class("ast-widget-attr-separator")], ":");
   };
   Html.attrValue = function(value) {
-    return Html.span([Html.class("ast-widget-attr-value")], [Html.text(value)]);
+    return Html.span([Html.class("ast-widget-attr-value")], value);
   };
 
   /*

@@ -1,0 +1,13 @@
+{
+  "directories": [
+    {
+      "path": "snabbdom",
+      "filesRegExp": "^.*\\.js$",
+      "fields": {
+        "type": "application/javascript",
+        "title": {"source": "filename", "prefix": "$:/plugins/ento/ast-preview/snabbdom/"},
+        "module-type": "library"
+      }
+    }
+  ]
+}

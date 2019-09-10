@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+# -*- mode: shell-script -*-
+
+set -euo pipefail
+
+SNABBDOM_VERSION=0.7.3
+
+target_dir=src/plugins/ast-preview/files/snabbdom
+rm -rf "$target_dir"
+mkdir -p "$target_dir"
+if [ ! -f "snabbdom-$SNABBDOM_VERSION.tgz" ]; then
+    npm pack snabbdom@$SNABBDOM_VERSION
+fi
+tar xfzv snabbdom-$SNABBDOM_VERSION.tgz \
+    -C "$target_dir" \
+    --strip-components=2 \
+    --wildcards "*/dist/*.js" \
+    --exclude "*.min.js"
