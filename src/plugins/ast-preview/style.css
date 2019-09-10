@@ -17,6 +17,7 @@ type: text/css
 .ast-widget-details summary {
     display: flex;
     list-style: none;
+    cursor: pointer;
 }
 
 .ast-widget-details summary::-webkit-details-marker {
