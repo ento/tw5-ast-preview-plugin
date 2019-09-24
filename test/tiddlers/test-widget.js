@@ -71,6 +71,15 @@ Tests the ast-widget end-to-end.
       expect(root.children[1].children[3].textContent).toBe('type:"element"');
     });
 
+    it("renders inner content if tiddler is not found", function() {
+      var wiki = new $tw.Wiki();
+      var text = "<$ast tiddler=H1>not found</$ast>";
+      var widgetNode = createWidgetNode(parseText(text, wiki, {parseAsInline: true}), wiki);
+      var wrapper = renderWidgetNode(widgetNode);
+      expect(wrapper.sequenceNumber).toBe(0);
+      expect(wrapper.outerHTML).toBe("<div>not found</div>");
+    });
+
     it("should refresh only what's needed", function() {
       var wiki = new $tw.Wiki();
       wiki.addTiddler({title: "H1", text: "! heading", type: "text/vnd.tiddlywiki"});

@@ -39,15 +39,20 @@ Widget to display the parsed tree node of the specified tiddler.
     this.parentDomNode = parent;
     this.computeAttributes();
     this.execute();
-    var oldVdomNode = this.vdomNode;
-    if (!oldVdomNode) {
-      var container = this.document.createElement("div");
-      this.assignAttributes(container, {excludeEventAttributes: true});
-      parent.insertBefore(container, nextSibling);
-      this.domNodes.push(container);
-      oldVdomNode = container;
+    if (this.newVdomNode) {
+      var oldVdomNode = this.vdomNode;
+      if (!oldVdomNode) {
+        var container = this.document.createElement("div");
+        this.assignAttributes(container, {excludeEventAttributes: true});
+        parent.insertBefore(container, nextSibling);
+        this.domNodes.push(container);
+        oldVdomNode = container;
+      }
+      this.vdomNode = this.patch(oldVdomNode, this.newVdomNode);
+    } else {
+      // failed to get referenced tiddler or parse it
+      this.renderChildren(parent, nextSibling);
     }
-    this.vdomNode = this.patch(oldVdomNode, this.newVdomNode);
   };
 
   AstWidget.prototype.refreshSelf = function() {
@@ -64,7 +69,7 @@ Widget to display the parsed tree node of the specified tiddler.
     if (parser) {
       this.newVdomNode = h("div", {}, transformParseTreeNodes(parser.tree));
     } else {
-      this.newVdomNode = h("div", {}, transformParseTreeNodes(this.parseTreeNode.children));
+      this.makeChildWidgets(this.parseTreeNode.children);
     }
   };
 
