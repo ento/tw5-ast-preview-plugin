@@ -127,7 +127,11 @@ Widget to display the parsed tree node of the specified tiddler.
       $tw.utils.each(Object.keys(prop).sort(), function(key) {
         var value = prop[key];
         if (propName === "attributes" && key === "filter") {
-          value = $tw.wiki.parseFilter(value.value);
+          try {
+            value = $tw.wiki.parseFilter(value.value);
+          } catch(e) {
+            value = {"<parse error>": e}
+          }
         }
         var transformedValue = transformParseTreeNodeProperty(value, key, Html.attrName(key));
         if (transformedValue) {

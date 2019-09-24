@@ -80,6 +80,28 @@ Tests the ast-widget end-to-end.
       expect(wrapper.outerHTML).toBe("<div>not found</div>");
     });
 
+    it("parses filters", function() {
+      var wiki = new $tw.Wiki();
+      wiki.addTiddler({title: "Tiddler", text: "<div filter='[tagged[hi]]'></div>", type: "text/vnd.tiddlywiki"});
+      var text = "<$ast tiddler=Tiddler/>";
+      var widgetNode = createWidgetNode(parseText(text, wiki, {parseAsInline: true}), wiki);
+      var wrapper = renderWidgetNode(widgetNode);
+      var root = wrapper.children[0].children[0];
+      expect(root.children[1].children[0].children[0].children[1].children[0].children[0].children[1].children[0].textContent)
+        .toBe('attributesfilter(1)objectoperators(1)objectoperand:"hi"operator:"tagged"prefix:""');
+    });
+
+    it("handles invalid filters gracefully", function() {
+      var wiki = new $tw.Wiki();
+      wiki.addTiddler({title: "Tiddler", text: "<div filter='['></div>", type: "text/vnd.tiddlywiki"});
+      var text = "<$ast tiddler=Tiddler/>";
+      var widgetNode = createWidgetNode(parseText(text, wiki, {parseAsInline: true}), wiki);
+      var wrapper = renderWidgetNode(widgetNode);
+      var root = wrapper.children[0].children[0];
+      expect(root.children[1].children[0].children[0].children[1].children[0].children[0].children[1].children[0].textContent)
+        .toBe('attributesfilter<parse error>:"Missing [ in filter expression"');
+    });
+
     it("should refresh only what's needed", function() {
       var wiki = new $tw.Wiki();
       wiki.addTiddler({title: "H1", text: "! heading", type: "text/vnd.tiddlywiki"});
