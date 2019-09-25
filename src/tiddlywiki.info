@@ -12,18 +12,8 @@
     "build": {
         "index": [
             "--rendertiddler",
-            "$:/core/save/all",
+            "$:/plugins/tiddlywiki/tiddlyweb/save/offline",
             "index.html",
-            "text/plain"
-        ],
-        "empty": [
-            "--rendertiddler",
-            "$:/core/save/all",
-            "empty.html",
-            "text/plain",
-            "--rendertiddler",
-            "$:/core/save/all",
-            "empty.hta",
             "text/plain"
         ],
         "externalimages": [
