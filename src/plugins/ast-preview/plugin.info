@@ -5,5 +5,6 @@
     "version": "0.0.1",
     "core-version": ">=5.0.8",
     "source": "https://github.com/ento/tw5-ast-preview-plugin",
-    "plugin-type": "plugin"
+    "plugin-type": "plugin",
+    "list": "readme"
 }

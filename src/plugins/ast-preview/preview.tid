@@ -1,6 +1,6 @@
 title: $:/plugins/ento/ast-preview/preview
 tags: $:/tags/EditPreview
-caption: parsed node tree
+caption: AST
 list-after: $:/core/ui/EditTemplate/body/preview/output
 
 <$list filter="[<currentTiddler>!is[image]]" emptyMessage={{$:/core/ui/EditTemplate/body/preview/output}}>

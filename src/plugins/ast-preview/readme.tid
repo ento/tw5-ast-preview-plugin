@@ -1,0 +1,30 @@
+title: $:/plugins/ento/ast-preview/readme
+type: text/vnd.tiddlywiki
+
+! AST preview plugin
+
+A plugin for exploring how ~TiddlyWiki will parse your Tiddler.
+
+!! Usage
+
+When editing a Tiddler, enable the preview pane and choose "AST" from the preview type dropdown.
+
+Alternatively, use the widget in your Tiddler like so:
+
+```
+<$ast tiddler=GettingStarted/>
+```
+
+
+!! Installation
+
+To add the plugin to your own ~TiddlyWiki5, drag this link to the browser window:
+
+$:/plugins/ento/ast-preview
+
+!! Acknowledgements
+
+The color scheme of the widget was borrowed from [[https://astexplorer.net]].
+
+The widget uses [[snabbdom|https://github.com/snabbdom/snabbdom]] to reflect updates
+without affecting the open/closed state of details.
