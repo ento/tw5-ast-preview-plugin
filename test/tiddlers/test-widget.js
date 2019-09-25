@@ -99,7 +99,50 @@ Tests the ast-widget end-to-end.
       var wrapper = renderWidgetNode(widgetNode);
       var root = wrapper.children[0].children[0];
       expect(root.children[1].children[0].children[0].children[1].children[0].children[0].children[1].children[0].textContent)
-        .toBe('attributesfilter<parse error>:"Missing [ in filter expression"');
+        .toBe('attributesfilter<parse error>:"Missing [ in filter expression"value:"["');
+    });
+
+    it("parses macro definitions", function() {
+      var wiki = new $tw.Wiki();
+      wiki.addTiddler({title: "Tiddler", text: "\\define sayhi(name) Hi, I'm $name$.", type: "text/vnd.tiddlywiki"});
+      var text = "<$ast tiddler=Tiddler/>";
+      var widgetNode = createWidgetNode(parseText(text, wiki, {parseAsInline: true}), wiki);
+      var wrapper = renderWidgetNode(widgetNode);
+      var root = wrapper.children[0].children[0];
+      expect(root.children[1].children[2].textContent)
+        .toBe('isMacroDefinition:true');
+    });
+
+    it("handles value-less macro definition gracefully", function() {
+      var wiki = new $tw.Wiki();
+      wiki.addTiddler({title: "Tiddler", text: "\\define sayhi()", type: "text/vnd.tiddlywiki"});
+      var text = "<$ast tiddler=Tiddler/>";
+      var widgetNode = createWidgetNode(parseText(text, wiki, {parseAsInline: true}), wiki);
+      var wrapper = renderWidgetNode(widgetNode);
+      var root = wrapper.children[0].children[0];
+      expect(root.children[1].textContent)
+        .toBe('attributesnametype:"string"value:"sayhi"value:[]children:[]isMacroDefinition:trueparams:[]type:"set"');
+    });
+
+    it("handles invalid macro definitions gracefully", function() {
+      var wiki = new $tw.Wiki();
+      wiki.addTiddler({title: "Tiddler", text: "\\define sayhi(name) Hi, I'm $name$.", type: "text/vnd.tiddlywiki"});
+      var text = "<$ast tiddler=Tiddler/>";
+      var widgetNode = createWidgetNode(parseText(text, wiki, {parseAsInline: true}), wiki);
+      var count = 0;
+      var originalParseText = wiki.parseText;
+      wiki.parseText = function() {
+        if (count > 0) {
+          throw "something went wrong";
+        } else {
+          count += 1;
+          return originalParseText.apply(wiki, arguments);
+        }
+      };
+      var wrapper = renderWidgetNode(widgetNode);
+      var root = wrapper.children[0].children[0];
+      expect(root.children[1].children[0].children[0].children[1].children[1].children[0].children[1].textContent)
+        .toBe('<parse error>:"something went wrong"value:"Hi, I\'m $name$."');
     });
 
     it("should refresh only what's needed", function() {

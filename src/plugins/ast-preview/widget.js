@@ -67,51 +67,25 @@ Widget to display the parsed tree node of the specified tiddler.
     this.tiddlerTitle = this.getAttribute("tiddler", this.getVariable("currentTiddler"));
     var parser = this.wiki.parseTiddler(this.tiddlerTitle);
     if (parser) {
-      this.newVdomNode = h("div", {}, transformParseTreeNodes(parser.tree));
+      this.newVdomNode = h("div", {}, this.transformParseTreeNodes(parser.tree));
     } else {
       this.makeChildWidgets(this.parseTreeNode.children);
     }
   };
 
-  function WrappedParsedTreeNodes(value) {
-    this.value = value;
-  }
-
-  WrappedParsedTreeNodes.prototype.map = function() {
-    return this.value.map.apply(this.value, arguments);
-  }
-
-  Object.defineProperty(WrappedParsedTreeNodes.prototype, "length", {
-    get: function() { return this.value.length; },
-  });
-
-  function ensureListItemElement(node) {
-    if (node.tag === "li") {
-      return node;
-    } else {
-      return Html.li([], [node]);
-    }
-  }
-
-  function makeSimpleListItemElement(prop, summary) {
-    return Html.li([], [
-      summary,
-      Html.attrSep(),
-      Html.attrValue(JSON.stringify(prop))
-    ]);
-  }
-
-  function transformParseTreeNodeProperty(prop, propName, summary) {
+  AstWidget.prototype.transformParseTreeNodeProperty = function(prop, propName, summary) {
+    var self = this;
     if ($tw.utils.isArray(prop) || prop instanceof WrappedParsedTreeNodes) {
       if (prop.length === 0) return makeSimpleListItemElement(prop, summary);
       var propContent = [];
       if (propName === "children" || prop instanceof WrappedParsedTreeNodes) {
-        $tw.utils.each(transformParseTreeNodes(prop), function(child) {
+        $tw.utils.each(self.transformParseTreeNodes(prop), function(child) {
           propContent.push(Html.li([], [child]));
         });
       } else {
         $tw.utils.each(prop, function(child, i) {
-          propContent.push(ensureListItemElement(transformParseTreeNodeProperty(child, typeof child, Html.nodeType(typeof child))));
+          propContent.push(ensureListItemElement(
+            self.transformParseTreeNodeProperty(child, typeof child, Html.nodeType(typeof child))));
         })
       }
       return Html.details([Html.class("ast-widget-details")], [
@@ -130,10 +104,10 @@ Widget to display the parsed tree node of the specified tiddler.
           try {
             value = $tw.wiki.parseFilter(value.value);
           } catch(e) {
-            value = {"<parse error>": e}
+            value = {"<parse error>": e.toString(), value: value.value}
           }
         }
-        var transformedValue = transformParseTreeNodeProperty(value, key, Html.attrName(key));
+        var transformedValue = self.transformParseTreeNodeProperty(value, key, Html.attrName(key));
         if (transformedValue) {
           propContent.push(ensureListItemElement(transformedValue));
         }
@@ -147,20 +121,25 @@ Widget to display the parsed tree node of the specified tiddler.
     }
   }
 
-  function transformParseTreeNodes(parseTreeNodes) {
+  AstWidget.prototype.transformParseTreeNodes = function(parseTreeNodes) {
+    var self = this;
     if (!parseTreeNodes) return [];
     return parseTreeNodes.map(function(node) {
       var nodeContent = [];
       if (node.type === "set" && node.isMacroDefinition) {
-        var parsed = $tw.wiki.parseText(
-          "text/vnd.tiddlywiki", node.attributes.value.value, {parseAsInline: true});
-        if (parsed) {
-          node.attributes.value = new WrappedParsedTreeNodes(parsed.tree);
+        try {
+          var parsed = self.wiki.parseText(
+            "text/vnd.tiddlywiki", node.attributes.value.value, {parseAsInline: true});
+          if (parsed) {
+            node.attributes.value = new WrappedParsedTreeNodes(parsed.tree);
+          }
+        } catch(e) {
+          node.attributes.value = {"<parse error>": e.toString(), value: node.attributes.value.value};
         }
       }
       $tw.utils.each(Object.keys(node).sort(), function(key) {
         var prop = node[key];
-        var propContent = transformParseTreeNodeProperty(prop, key, Html.attrName(key));
+        var propContent = self.transformParseTreeNodeProperty(prop, key, Html.attrName(key));
         if (propContent) {
           nodeContent.push(ensureListItemElement(propContent));
         }
@@ -183,6 +162,39 @@ Widget to display the parsed tree node of the specified tiddler.
         Html.ul([Html.class("ast-widget-list")], nodeContent)
       ])
     });
+  }
+
+  /*
+     Wrapper that indicates the value should be treated as a parse tree node,
+     not a node property.
+  */
+  function WrappedParsedTreeNodes(value) {
+    this.value = value;
+  }
+
+  WrappedParsedTreeNodes.prototype.map = function() {
+    return this.value.map.apply(this.value, arguments);
+  }
+
+  Object.defineProperty(WrappedParsedTreeNodes.prototype, "length", {
+    get: function() { return this.value.length; },
+  });
+
+  function ensureListItemElement(node) {
+    if (node.tag === "li") {
+      return node;
+    } else {
+      return Html.li([], [node]);
+    }
+  }
+
+  function makeSimpleListItemElement(prop, summary) {
+    var propValue = (prop instanceof WrappedParsedTreeNodes) ? prop.value : prop;
+    return Html.li([], [
+      summary,
+      Html.attrSep(),
+      Html.attrValue(JSON.stringify(propValue))
+    ]);
   }
 
   var Html = {};
