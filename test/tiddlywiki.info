@@ -2,8 +2,7 @@
   "description": "markdown plugin tests",
   "plugins": [
     "tiddlywiki/jasmine",
-    "tiddlywiki/markdown",
-    "ast-preview"
+    "tiddlywiki/markdown"
   ],
   "themes": [
     "tiddlywiki/vanilla",
