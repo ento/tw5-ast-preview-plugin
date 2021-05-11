@@ -1,5 +1,5 @@
 /*\
-title: test-wikitext.js
+title: test-widget.js
 type: application/javascript
 tags: [[$:/tags/test-spec]]
 
