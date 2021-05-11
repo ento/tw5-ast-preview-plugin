@@ -1,5 +1,5 @@
 {
-  "description": "markdown plugin tests",
+  "description": "plugin tests",
   "plugins": [
     "tiddlywiki/jasmine",
     "tiddlywiki/markdown"
